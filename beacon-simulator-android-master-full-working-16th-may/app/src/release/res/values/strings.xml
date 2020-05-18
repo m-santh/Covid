@@ -1,0 +1,4 @@
+<!--suppress XmlUnboundNsPrefix -->
+<resources>
+    <string name="app_name" translatable="false">Atkins Safe Distance</string>
+</resources>

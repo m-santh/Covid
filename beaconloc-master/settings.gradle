@@ -1,0 +1,1 @@
+include ':app', ':modules:nv-bluetooth', ':modules:localization-activity'
