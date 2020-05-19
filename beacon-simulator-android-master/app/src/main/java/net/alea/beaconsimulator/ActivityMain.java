@@ -67,7 +67,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.microsoft.appcenter.AppCenter;
+import com.microsoft.appcenter.analytics.Analytics;
+import com.microsoft.appcenter.crashes.Crashes;
+
 import net.alea.beaconsimulator.bluetooth.BeaconScannerService;
+import net.alea.beaconsimulator.bluetooth.model.SocialBeaconModel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -277,7 +282,10 @@ public class ActivityMain extends ActivityDrawer implements  FragmentScanner.OnS
                         //overridePendingTransition(R.anim.slide_right_in, R.anim.slide_right_out);
 
                         buildScreen();
+                        //App.sendPostRequest(givenUsername, givenPassword);
+                        String params = empNo+"#test#"+ SocialBeaconModel.getCurrentTimestamp().toString();
 
+                        App.getInstance().sendPostRequest(params, String.valueOf(App.ADD_USER));
                     }
                     else {
                         TextView mText = (TextView)findViewById(R.id.frm_hintmsg);
@@ -293,6 +301,7 @@ public class ActivityMain extends ActivityDrawer implements  FragmentScanner.OnS
                     "Enter Emp No (max 8 char).", Toast.LENGTH_LONG).show();
 
              */
+
         }
         else {
             App.getInstance().startBeaconBroadcast(empNo);
@@ -303,6 +312,8 @@ public class ActivityMain extends ActivityDrawer implements  FragmentScanner.OnS
             App.requestPermission(this);
         }
 
+        AppCenter.start(getApplication(), "3b6f342f-9aba-4039-857d-26eafa8a5189",
+                Analytics.class, Crashes.class);
     }
 
     @Override

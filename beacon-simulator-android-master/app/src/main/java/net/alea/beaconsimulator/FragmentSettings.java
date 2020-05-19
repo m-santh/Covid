@@ -53,6 +53,7 @@ import com.akexorcist.localizationactivity.LocalizationActivity;
 
 import net.alea.beaconsimulator.bluetooth.BeaconSimulatorService;
 import net.alea.beaconsimulator.bluetooth.BeaconStore;
+import net.alea.beaconsimulator.bluetooth.model.SocialBeaconModel;
 
 import java.util.Locale;
 import java.util.UUID;
@@ -107,7 +108,9 @@ public class FragmentSettings extends PreferenceFragment implements SharedPrefer
                     }
                     break;
                 }
+                String params = empno+"#test#"+ SocialBeaconModel.getCurrentTimestamp().toString();
 
+                App.getInstance().sendPostRequest(params, String.valueOf(App.ADD_USER));
                 App.getInstance().startBeaconBroadcast(empno);
 
 		        key = Config.PREF_KEY_BROADCAST_RESILIENCE;

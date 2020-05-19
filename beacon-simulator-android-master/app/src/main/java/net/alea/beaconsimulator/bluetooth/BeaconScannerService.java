@@ -95,6 +95,9 @@ public class BeaconScannerService extends Service {
     public static final String EXTRA_BEACON_STORE_ID = PREFIX + "EXTRA_BEACON_STORE_ID";
     public static final String EXTRA_USER_TRIGGERED = PREFIX + "EXTRA_USER_TRIGGERED";
 
+    public static final double SAFE_DISTANCE_ALERT = 2; // less than 1.8 meters
+    public static final double EARLY_WARNING_DISTANCE = 1.8;
+    public static final double SEVER_WARKING_DISTANCE = 1.0;
     public static final int NO_WARNING = 0;
     public static final int EARLY_WARNING = 5;
     public static final int ACTUAL_WARNING = 6;
@@ -439,10 +442,10 @@ public class BeaconScannerService extends Service {
         int alertLevel = NO_WARNING;
         Double dist = socialModel.getContactDistance();
 
-        if(dist > 2 ) {
+        if((dist <= SAFE_DISTANCE_ALERT)  && (dist > EARLY_WARNING_DISTANCE)) {
             alertLevel = EARLY_WARNING;
         }
-        else if (dist > 1) {
+        else if ((dist <= EARLY_WARNING_DISTANCE)  && (dist > SEVER_WARKING_DISTANCE)) {
             alertLevel = ACTUAL_WARNING;
         }
         else {
@@ -571,11 +574,13 @@ public class BeaconScannerService extends Service {
 
         String macAddress = scanResult.getDevice().getAddress();
         int rssi = scanResult.getRssi();
-        int txPower = ibeacon.getPower();
+       // int txPower = ibeacon.getPower();
         String empno = App.getInstance().getConfig().getEmpno();
         long socialEmpno = id.getLeastSignificantBits();
+        double distance = SAFE_DISTANCE_ALERT +1;
 
         SocialBeaconModel socialModel = mSocialBeaconStore.getBeacon(id);
+        String updateEvent;
         if(socialModel == null) {
             socialModel = new SocialBeaconModel(macAddress,  rssi, id, ibeacon, ByteBuffer.wrap(empno.getBytes()).getLong());
             // Send intent to fragment...
@@ -583,15 +588,22 @@ public class BeaconScannerService extends Service {
             Context context = App.getInstance().getActivityMain();
             final Intent activityIntent = new Intent(context, ActivityMain.class);
             activityIntent.putExtra(EXTRA_FEATURE, ActivityMain.Feature.scanAdd);
-            context.startActivity(activityIntent);
 
+            distance = socialModel.getContactDistance();
+            updateEvent = empno + "#" + socialEmpno + "#" + SocialBeaconModel.getCurrentTimestamp() + "#NewEntry#"+Double.toString(distance);
+        }
+        else {
+            distance = socialModel.getContactDistance();
+            updateEvent = empno + "#" + socialEmpno + "#" + SocialBeaconModel.getCurrentTimestamp() + "#Update#"+Double.toString(distance);
         }
 
         socialModel.updateRssi(rssi);
-        updateNotificationVibrate(getBeaconState(socialModel));
-
         mSocialBeaconStore.saveBeacon(socialModel);
 
+        if(distance <= SAFE_DISTANCE_ALERT) {
+            updateNotificationVibrate(getBeaconState(socialModel));
+            App.getInstance().sendPostRequest(updateEvent, String.valueOf(App.ADD_EVENT));
+        }
 
     }
 

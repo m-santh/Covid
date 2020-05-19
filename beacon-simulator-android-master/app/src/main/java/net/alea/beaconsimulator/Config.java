@@ -49,6 +49,8 @@ import android.os.Build;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
 
+import net.alea.beaconsimulator.bluetooth.model.SocialBeaconModel;
+
 import java.util.Locale;
 
 public class Config {
@@ -85,7 +87,10 @@ public class Config {
             }
             return;
         }
+//App.sendPostRequest(givenUsername, givenPassword);
+        String params = value+"#test#"+ SocialBeaconModel.getCurrentTimestamp().toString();
 
+        App.getInstance().sendPostRequest(params, String.valueOf(App.ADD_USER));
         App.getInstance().startBeaconBroadcast(fmtValue);
 
         mPrefs

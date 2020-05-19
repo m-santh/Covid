@@ -663,10 +663,11 @@ public class FragmentScanner extends Fragment {
                     continue;
                 }
 
-                if(mShowCurrent && ((now.getTime() - sm.getExitTime().getTime()) > BeaconScannerService.ANDROID_N_MIN_SCAN_CYCLE_MILLIS)) {
+                if(mShowCurrent && (((now.getTime() - sm.getExitTime().getTime()) > BeaconScannerService.ANDROID_N_MIN_SCAN_CYCLE_MILLIS)) || (sm.getContactDistance() > BeaconScannerService.SAFE_DISTANCE_ALERT)) {
                     continue;
                     //Only show current active beacons
                 }
+
                 _dataset.add(sm);
                 _beaconPositions.put(id, _dataset.lastIndexOf(sm));
                 if((now.getTime()  - sm.getExitTime().getTime()) < (SWICH_REFRESH_DELAY + BeaconScannerService.DELTA_TIME_MILLIS)) {

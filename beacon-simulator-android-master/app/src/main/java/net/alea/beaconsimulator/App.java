@@ -54,6 +54,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
@@ -62,6 +63,15 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.akexorcist.localizationactivity.LanguageSetting;
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.HttpHeaderParser;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 
 import net.alea.beaconsimulator.bluetooth.BeaconScannerService;
 import net.alea.beaconsimulator.bluetooth.BeaconSimulatorService;
@@ -81,11 +91,28 @@ import net.alea.beaconsimulator.event.UserRequestStopEvent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -110,9 +137,16 @@ public class App extends Application {
     public static final String BEACON_UUID_MASK = "FFFFFFFF-FFFF-FFFF-0000-000000000000";
     public static final int SOCIAL_LIMIT_DAYS = 25;
 
+    public static final int ADD_EVENT = 100;
+    public static final int ADD_USER = 101;
+    public static final int GET_USER = 102;
+
     public static App getInstance() {
         return sInstance;
     }
+
+    static Map<String, String> mRequestMap =
+            new HashMap<String, String>();
 
     private UUID getBeaconUUID(String empno) {
         long uuidHigh = UUID.fromString(BEACON_UUID).getMostSignificantBits();
@@ -379,4 +413,89 @@ public class App extends Application {
         }
     }
 
+    public void sendPostRequest(final String givenUsername, final String type) {
+
+        final RequestQueue requestQueue = Volley.newRequestQueue(this);
+        final String URL = "https://atkinsble.herokuapp.com/" + ((type.equalsIgnoreCase(String.valueOf(ADD_EVENT))) ? "bleevent/add": "user/add");
+        final Integer errocount = 0;
+
+        final String requestBody = givenUsername;
+
+        sLogger.info("VOLLEY", givenUsername, type);
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
+            //String requestBody = givenUsername;
+            //final String eventUrl = URL;
+            @Override
+            public void onResponse(String response) {
+                sLogger.info("VOLLEY", response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                sLogger.error("VOLLEY", error.toString());
+                // Keep retrying untill it succeeds
+                if(errocount > 5) {
+                    mRequestMap.put(givenUsername, type);
+                }
+                else {
+
+                    sendPostRequest(givenUsername, type);
+                }
+
+            }
+        }) {
+            /*
+            @Override
+            public String getBodyContentType() {
+                return "application/json; charset=utf-8";
+            }
+
+
+            @Override
+            public byte[] getBody() throws AuthFailureError {
+                try {
+                    return requestBody == null ? null : requestBody.getBytes("utf-8");
+                } catch (UnsupportedEncodingException uee) {
+                    sLogger.warn("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                    return null;
+                }
+            }
+
+             */
+
+            @Override
+            protected Map<String,String> getParams(){
+                Map<String,String> params = new HashMap<String, String>();
+                sLogger.info("String value {}", givenUsername);
+                params.put("value",givenUsername);
+                //params.put(KEY_PASSWORD,password);
+                //params.put(KEY_EMAIL, email);
+                return params;
+            }
+
+            @Override
+            protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                String responseString = "";
+                if (response != null) {
+                    responseString = String.valueOf(response.statusCode);
+                    // can get more details such as response.headers
+                }
+                return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
+            }
+        };
+
+        requestQueue.add(stringRequest);
+    }
+
+    public void sendPostAll() {
+        Iterator iterator = mRequestMap.keySet().iterator();
+
+        while(iterator.hasNext()){
+            String key   = (String) iterator.next();
+            String value = mRequestMap.get(key);
+
+            mRequestMap.remove(key);
+            sendPostRequest(key, value);
+        }
+    }
 }
