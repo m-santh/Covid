@@ -56,7 +56,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
         android:id="@+id/action_vitals"
         android:title="@string/action_vitals"
         android:icon="@drawable/ic_vitals"
-        app:showAsAction="always"
+        android:visibility="gone"
         tools:ignore="AlwaysShowAction" />
 
     <item

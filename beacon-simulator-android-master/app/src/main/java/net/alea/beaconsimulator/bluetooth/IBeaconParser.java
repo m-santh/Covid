@@ -33,8 +33,8 @@ public class IBeaconParser implements AdvertiseDataParser<IBeacon> {
             return null;
         }
         final byte[] data = manufacturers.valueAt(0);
-        if (data.length != MANUFACTURER_PACKET_SIZE) {
-            //sLogger.warn("iBeacon code 2 {} ", scanRecord.toString());
+        if (data.length < MANUFACTURER_PACKET_SIZE) {
+            sLogger.warn("iBeacon code 2 {} ", scanRecord.toString());
             return null;
         }
 

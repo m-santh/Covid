@@ -413,14 +413,17 @@ public class App extends Application {
         }
     }
 
+    static RequestQueue requestQueue ;
     public void sendPostRequest(final String givenUsername, final String type) {
 
-        final RequestQueue requestQueue = Volley.newRequestQueue(this);
         final String URL = "https://atkinsble.herokuapp.com/" + ((type.equalsIgnoreCase(String.valueOf(ADD_EVENT))) ? "bleevent/add": "user/add");
         final Integer errocount = 0;
 
         final String requestBody = givenUsername;
 
+        if(requestQueue == null) {
+           requestQueue = Volley.newRequestQueue(this);
+        }
         sLogger.info("VOLLEY", givenUsername, type);
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
             //String requestBody = givenUsername;
@@ -433,8 +436,9 @@ public class App extends Application {
             @Override
             public void onErrorResponse(VolleyError error) {
                 sLogger.error("VOLLEY", error.toString());
+                //errocount++;
                 // Keep retrying untill it succeeds
-                if(errocount > 5) {
+                if(true || errocount > 5) {
                     mRequestMap.put(givenUsername, type);
                 }
                 else {
@@ -444,24 +448,7 @@ public class App extends Application {
 
             }
         }) {
-            /*
-            @Override
-            public String getBodyContentType() {
-                return "application/json; charset=utf-8";
-            }
 
-
-            @Override
-            public byte[] getBody() throws AuthFailureError {
-                try {
-                    return requestBody == null ? null : requestBody.getBytes("utf-8");
-                } catch (UnsupportedEncodingException uee) {
-                    sLogger.warn("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
-                    return null;
-                }
-            }
-
-             */
 
             @Override
             protected Map<String,String> getParams(){

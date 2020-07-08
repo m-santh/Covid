@@ -44,13 +44,16 @@ package net.alea.beaconsimulator.bluetooth.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.UUID;
@@ -114,7 +117,7 @@ public class SocialBeaconModel extends  BeaconModel implements Parcelable {
         }
 
         double calculateDistance(int txPower, double rssi) {
-            if (rssi == 0.0D) {
+            if (rssi == 0.0D || txPower == 0) {
                 return -1.0D;
             } else {
                 //sLogger.info("CurveFittedDistanceCalculator calculating distance based on mRssi of {} and txPower of {}", new Object[]{rssi, txPower});
@@ -308,7 +311,13 @@ public class SocialBeaconModel extends  BeaconModel implements Parcelable {
     }
 
     public String serializeToJson() {
-        Gson gson = new Gson();
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        Gson gson = new GsonBuilder()
+                .enableComplexMapKeySerialization()
+                .serializeNulls()
+                .setDateFormat(DateFormat.LONG)
+                .serializeSpecialFloatingPointValues()
+                .create();
         return gson.toJson(this) ; //, SocialBeaconModel.class);
     }
 

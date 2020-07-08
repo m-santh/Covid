@@ -100,7 +100,7 @@ import net.alea.beaconsimulator.bluetooth.model.IBeacon;
 import net.alea.beaconsimulator.bluetooth.model.SocialBeaconModel;
 import net.alea.beaconsimulator.component.DialogAskScanPermission;
 import net.alea.beaconsimulator.component.DividerItemDecoration;
-import net.simplyadvanced.vitalsigns.CheckVitalSignsActivity;
+//import net.simplyadvanced.vitalsigns.CheckVitalSignsActivity;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -283,8 +283,10 @@ public class FragmentScanner extends Fragment {
                 return true;
             }
             case R.id.action_vitals: {
+                /*
                 startActivity(new Intent(getContext(), CheckVitalSignsActivity.class));
                 return true;
+                 */
             }
             case R.id.action_screen_on: {
                 App app = (App)getActivity().getApplication();
@@ -658,7 +660,7 @@ public class FragmentScanner extends Fragment {
 
             for (String id: beaconId) {
                 SocialBeaconModel sm = mSocialBeaconStore.getBeacon(UUID.fromString(id));
-                if(sm.getEventState() == SocialBeaconModel.EXIT_EVENT) {
+                if((sm == null) || (sm.getEventState() == SocialBeaconModel.EXIT_EVENT)) {
                     // dont add
                     continue;
                 }
@@ -679,6 +681,7 @@ public class FragmentScanner extends Fragment {
             notifyDataSetChanged();
 
             mDescriptionView.setVisibility(View.GONE);
+            //App.getInstance().sendPostAll();
             /*
             ActivityMain app = (ActivityMain) App.getInstance().getActivityMain();
             FragmentScanner fg = app.getFragmentScanner();

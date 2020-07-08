@@ -611,7 +611,7 @@ public class BeaconScannerService extends Service {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
-            sLogger.info("New BLE device found: {}", result.getDevice().getAddress());
+            //sLogger.info("New BLE device found: {} data {}", result.getDevice().getAddress(), result.toString());
             sInstance.addScanResult(result);
         }
         public void onBatchScanResults(List<ScanResult> results) {
